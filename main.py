@@ -1,79 +1,98 @@
 import tkinter as tk
 import ttkbootstrap as ttk 
 import mysql.connector
+import os
+from tkinter import messagebox
 
+try:
+    db = mysql.connector.connect(
+        host = 'localhost',
+        user = 'root',
+        passwd = 'mazen01120908137b',
+        database = 'student_management_system'
+    )
 
-db = mysql.connector.connect(
-    host = 'localhost',
-    user = 'root',
-    passwd = 'mazen01120908137b',
-    database = 'student_management_system'
-)
-cursor = db.cursor()
+    cursor = db.cursor()
+
+except mysql.connector.errors.ProgrammingError:
+    root = tk.Tk()
+    root.withdraw()
+    messagebox.showerror('Error in Database', 'Failed in Database Connection')
+    quit()
+ 
 
 # Window
 
 class App(ttk.Window):
+
     def __init__(self):
-        super().__init__()
+
+        # Window Settings
+        super().__init__(themename = 'cosmo')
         self.geometry('600x400')
         self.title('Student Managment System')
-        MainWindow(self, AddWindow)
+        dir = os.path.realpath(os.path.join("\\".join(__file__.split("\\")[:-1]),'icon.ico'))
+        self.iconbitmap(dir)
+        MainWindow(self)
 
         # Run
         self.mainloop()
 
+
 class MainWindow():
-    def __init__(self, parent, add_window):
+    def __init__(self, parent):
 
-        self.add_window = add_window
         self.parent = parent
-
-        ls = [
-            '1st Prim',
-            '2st Prim',
-            '3st Prim',
-            '4st Prim',
-            '5st Prim',
-            '6st Prim',
-            '1st Prip',
-            '2st Prip',
-            '3st Prip',
-            '1st Sec',
-            '2st Sec',
-            '3st Sec',
-        ]
         self.grade_var = tk.StringVar()
-        self.date_var = tk.StringVar()
+        self.ls = [
+            '1st Prim',
+            '2nd Prim',
+            '3rd Prim',
+            '4th Prim',
+            '5th Prim',
+            '6th Prim',
+            '1st Prip',
+            '2nd Prip',
+            '3rd Prip',
+            '1st Sec',
+            '2nd Sec',
+            '3rd Sec',
+        ]
 
-        # Main page
+        self.create_widgets()
+        self.create_layout()
 
-        self.lable_frame = ttk.Frame(parent)
+
+    def create_widgets(self):
+
+        # Welcome Lable
+        self.lable_frame = ttk.Frame(self.parent)
         self.lable = ttk.Label(self.lable_frame, text = 'Welcome to Student Managment System', font = ('Calibri', '20', 'bold'), foreground = '#000')
 
-        self.main_frame = ttk.Frame(parent)
+        # Grade Section
+        self.main_frame = ttk.Frame(self.parent)
         self.grade_entry_frame = ttk.Frame(self.main_frame)
-        self.grade_label = ttk.Label(self.grade_entry_frame, text = 'Grade :', font = ('Calibri', 14))
-        self.grade_entry = ttk.Combobox(self.grade_entry_frame, values = ls, textvariable = self.grade_var)
+        self.grade_label = ttk.Label(self.grade_entry_frame, text = 'Grade ', font = ('Calibri', 14))
+        self.grade_entry = ttk.Combobox(self.grade_entry_frame, values = self.ls, textvariable = self.grade_var, bootstyle = 'success')
 
+        # Date Section
         self.date_entry_frame = ttk.Frame(self.main_frame)
-        # self.date_label = ttk.Label(self.date_entry_frame, text = 'Date :', font = ('Calibri', 14))
-        self.date_entry = ttk.DateEntry(self.date_entry_frame)
+        self.date_entry = ttk.DateEntry(self.date_entry_frame, bootstyle = 'success')
 
-        self.buttons_frame = ttk.Frame(parent)
-        self.add_button = ttk.Button(self.buttons_frame, text = 'Add', command = self.add_button_func)
-        self.search_button = ttk.Button(self.buttons_frame, text = 'Search', command = self.search_button_func)
-        self.exit_button = ttk.Button(self.buttons_frame, text = 'Exit', command = parent.quit)
-
-        self.create_layout()
+        # Buttons Section
+        self.buttons_frame = ttk.Frame(self.parent)
+        self.add_button = ttk.Button(self.buttons_frame, text = 'Add', command = self.add_button_func, bootstyle = 'success outline')
+        self.search_button = ttk.Button(self.buttons_frame, text = 'Search', command = self.search_button_func, bootstyle = 'success outline')
+        self.exit_button = ttk.Button(self.buttons_frame, text = 'Exit', command = self.parent.quit, bootstyle = 'success outline')
 
 
     def create_layout(self):
 
-        # Layout
+        # Grid Settings
         self.parent.rowconfigure((0, 1, 2, 3), weight = 1, uniform = 'a')
         self.parent.columnconfigure((0, 1, 2), weight = 1, uniform = 'a')
 
+        # Layout
         self.lable_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'nsew')
         self.main_frame.grid(row = 1, column = 0, columnspan = 3, rowspan = 2, sticky = 'nsew')
         self.buttons_frame.grid(row = 3, column = 0, columnspan = 3, sticky = 'nsew')
@@ -85,46 +104,54 @@ class MainWindow():
         self.grade_entry.pack(expand = 1, side = 'right')
 
         self.date_entry_frame.pack(expand = 1, side = 'left')
-        # self.date_label.pack(expand = 1, side = 'left')
         self.date_entry.pack(expand = 1, side = 'right', padx = 0)
-
 
         self.add_button.pack(side = 'left', expand = 1, anchor = 's', pady = 15, ipadx = 40)
         self.search_button.pack(side = 'left', expand = 1, anchor = 's', pady = 15, ipadx = 40)
         self.exit_button.pack(side = 'left', expand = 1, anchor = 's', pady = 15, ipadx = 40)
 
+        self.grade_entry.focus()
+
 
     def add_button_func(self):
-        window = AddWindow()
-        window.focus()
         if self.grade_var.get():
 
-            window.db_name = f"a{self.date_entry.entry.get().replace('/', '_')}x{self.grade_var.get().replace(' ', '_')}"
-            query = f"CREATE TABLE IF NOT EXISTS {window.db_name} ( name NVARCHAR(100), homeword BOOLEAN, mark INT, phone VARCHAR(20) )"
+            # Initiate The Window
+            window = AddWindow(f"a{self.date_entry.entry.get().replace('/', '_')}x{self.grade_var.get().replace(' ', '_')}")
+            window.focus()
+
+            # Execute Query
+            query = f"CREATE TABLE IF NOT EXISTS {window.get_db_name()} ( name NVARCHAR(100), homeword BOOLEAN, mark INT, phone VARCHAR(20) )"
             cursor.execute(query)
             db.commit()
-            print('Done')
 
         else:
-            pass
+            messagebox.showerror('Enter the Grade', 'No Grade Inserted')
         
 
     def search_button_func(self):
-        window = SearchWindow()
-        window.focus()
+
         if self.grade_var.get():
-            window.db_name = f"a{self.date_entry.entry.get().replace('/', '_')}x{self.grade_var.get().replace(' ', '_')}"
-            query = f"SELECT * FROM {window.db_name}"
-            cursor.execute(query)
-            for row in cursor.fetchall():
-                window.table.insert(parent = '', index = tk.END, values = row)
+
+            db_name = f"a{self.date_entry.entry.get().replace('/', '_')}x{self.grade_var.get().replace(' ', '_')}"
+            try:
+                query = f"SELECT * FROM {db_name}"
+                cursor.execute(query)
+                window = SearchWindow()
+                window.focus()
+                for row in cursor.fetchall():
+                    window.table.insert(parent = '', index = tk.END, values = row)
+            except mysql.connector.errors.ProgrammingError :
+                messagebox.showerror("Not Found", "There is No Such Session")
         else:
-            pass
+            messagebox.showerror('Enter The Grade', 'No Grade Inserted')
+
 
 class AddWindow(ttk.Toplevel):
-    def __init__(self):
+
+    def __init__(self, db_name = ''):
         super().__init__()
-        self.db_name = ''
+        self.__db_name = db_name
 
         self.name_frame = ttk.Frame(self)
         self.name_label = ttk.Label(self.name_frame, text = 'Name :')
@@ -147,7 +174,6 @@ class AddWindow(ttk.Toplevel):
         self.cancel_button = ttk.Button(self.buttons_frame, text = 'Cancel', command = self.destroy)
 
         self.create_layout(self)
-
 
     def create_layout(self, parent : ttk.Toplevel):
         
@@ -177,18 +203,30 @@ class AddWindow(ttk.Toplevel):
         self.cancel_button.pack(side = 'left', expand = 1, ipadx = 40)
 
     def save_button_func(self):
-        if self.db_name:
-            query = f"INSERT INTO {self.db_name} VALUES ('{self.name_entry.get()}', {'true' if self.homework_entry.get() == 'Yes' else 'false'}, {self.mark_entry.get()}, '{self.phone_entry.get()}')"
-            print(query)
-            cursor.execute(query)
-            db.commit()
-            print('Data Inserted')
         
+        if self.get_db_name():
+            try:
+                query = f"INSERT INTO {self.get_db_name()} VALUES ('{self.name_entry.get()}', {'true' if self.homework_entry.get() == 'Yes' else 'false'}, {self.mark_entry.get()}, '{self.phone_entry.get()}')"
+                cursor.execute(query)
+                db.commit()
+                messagebox.showinfo('Success', 'Date Inserted Successfully')
+                self.focus()
+            except mysql.connector.errors.ProgrammingError :
+                messagebox.showerror('Invalid Info', 'Invalid Input')
+                self.focus()
+        else:
+            messagebox.showerror('Wrong in Add Button', 'Falied to Format Database Name')
+        
+    def set_db_name(self, value):
+        self.__db_name = value
+
+    def get_db_name(self):
+        return self.__db_name
+
 
 class SearchWindow(ttk.Toplevel):
     def __init__(self):
         super().__init__()
-        # self.geometry('600x400')
 
         # Table
         self.table = ttk.Treeview(self, columns = ('name', 'homework', 'mark', 'phone'), show = 'headings', style = 'success')
@@ -204,4 +242,5 @@ class SearchWindow(ttk.Toplevel):
         self.table.config(yscrollcommand = scroll_bar.set)
         scroll_bar.pack(side = 'left', fill = 'y')
     
-App()
+if __name__ == '__main__':
+    App()
