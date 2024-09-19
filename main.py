@@ -31,8 +31,6 @@ class App(ttk.Window):
         super().__init__(themename = 'cosmo')
         self.geometry('600x400')
         self.title('Student Managment System')
-        dir = os.path.realpath(os.path.join("\\".join(__file__.split("\\")[:-1]),'icon.ico'))
-        self.iconbitmap(dir)
         MainWindow(self)
 
         # Run
