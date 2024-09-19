@@ -152,17 +152,18 @@ class AddWindow(ttk.Toplevel):
     def __init__(self, db_name = ''):
         super().__init__()
         self.__db_name = db_name
+        self.homework_var = tk.StringVar(value = 'Yes')
 
         self.name_frame = ttk.Frame(self)
         self.name_label = ttk.Label(self.name_frame, text = 'Name :')
         self.name_entry = ttk.Entry(self.name_frame, width = 30)
 
         self.mark_frame = ttk.Frame(self)
-        self.mark_entry = ttk.Spinbox(self.mark_frame, width = 27)
+        self.mark_entry = ttk.Entry(self.mark_frame, width = 30)
         self.mark_label = ttk.Label(self.mark_frame, text = 'Mark :')
 
         self.homework_frame = ttk.Frame(self)
-        self.homework_entry = ttk.Combobox(self.homework_frame, values = ['Yes', 'No'], width = 27)
+        self.homework_entry = ttk.Combobox(self.homework_frame, values = ['Yes', 'No'], width = 27, textvariable = self.homework_var)
         self.homework_label = ttk.Label(self.homework_frame, text = 'Homework :')
 
         self.phone_frame = ttk.Frame(self)
@@ -206,7 +207,7 @@ class AddWindow(ttk.Toplevel):
         
         if self.get_db_name():
             try:
-                query = f"INSERT INTO {self.get_db_name()} VALUES ('{self.name_entry.get()}', {'true' if self.homework_entry.get() == 'Yes' else 'false'}, {self.mark_entry.get()}, '{self.phone_entry.get()}')"
+                query = f"INSERT INTO {self.get_db_name()} VALUES ('{self.name_entry.get()}', {'true' if self.homework_var.get().lower() == 'yes' else 'false'}, {self.mark_entry.get()}, '{self.phone_entry.get()}')"
                 cursor.execute(query)
                 db.commit()
                 messagebox.showinfo('Success', 'Date Inserted Successfully')
